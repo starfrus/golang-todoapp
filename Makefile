@@ -3,10 +3,10 @@ export
 
 export PROJECT_ROOT=$(shell pwd)
 
-env-up: ## Включить target todoapp-postgres docker compose
+env-up: ## Включить target todoapp-env-postgres docker compose
 	@docker compose up -d todoapp-postgres
 
-env-down: ## Отключить target todoapp-postgres docker compose
+env-down: ## Отключить target todoapp-env-postgres docker compose
 	@docker compose down todoapp-postgres
 
 env-cleanup: ## Очистить volume файлы окружения
