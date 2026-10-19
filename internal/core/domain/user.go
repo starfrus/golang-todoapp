@@ -62,36 +62,46 @@ func (u *User) Validate() error {
 }
 
 type UserPatch struct {
-	FullName Nullable[string]
+	FullName    Nullable[string]
 	PhoneNumber Nullable[string]
 }
 
-func(p *UserPatch) Validate() error{
-	if p.FullName.Set && p.FullName.Value == nil{
+func NewUserPatch(
+	fullName Nullable[string],
+	phoneNumber Nullable[string],
+)UserPatch{
+	return UserPatch{
+		FullName: fullName,
+		PhoneNumber: phoneNumber,
+	}
+}
+
+func (p *UserPatch) Validate() error {
+	if p.FullName.Set && p.FullName.Value == nil {
 		return fmt.Errorf(
-			"'FullName' can`t be patched to NULL: %w", 
+			"'FullName' can`t be patched to NULL: %w",
 			core_errors.ErrInvaligArgument,
 		)
 	}
 	return nil
 }
 
-func (u *User)ApplyPatch(patch UserPatch) error{
-	if err := patch.Validate(); err != nil{
+func (u *User) ApplyPatch(patch UserPatch) error {
+	if err := patch.Validate(); err != nil {
 		return fmt.Errorf("validate user patch: %w", err)
 	}
 
 	tmp := *u
 
-	if patch.FullName.Set{
+	if patch.FullName.Set {
 		tmp.FullName = *patch.FullName.Value
 	}
 
-	if patch.PhoneNumber.Set{
+	if patch.PhoneNumber.Set {
 		tmp.PhoneNumber = patch.PhoneNumber.Value
 	}
 
-	if err := tmp.Validate(); err != nil{
+	if err := tmp.Validate(); err != nil {
 		return fmt.Errorf("validate patched user: %w", err)
 	}
 

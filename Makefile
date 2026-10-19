@@ -13,7 +13,7 @@ env-cleanup: ## Очистить volume файлы окружения
 	@read -p "Очистить все volume файлы окружения? Опасность утечки данных. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
 		docker compose down todoapp-postgres port-forwarder && \
-		rm -rf out/pgdata && \
+		rm -rf ${PROJECT_ROOT}/out/pgdata && \
 		echo "Файлы окружения очищены"; \
 	else \
 		echo "Очистка окружения отменена"; \
@@ -56,7 +56,7 @@ todoapp-run: ## Запуск todoapp приложения
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
-	go run cmd/todoapp/main.go
+	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
 
 help:
 	@grep -E '^[a-zA-Z_0-9_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-20s\033[0m\033[37m%s\033[0m\n", $$1, $$2}'

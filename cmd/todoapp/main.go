@@ -8,12 +8,12 @@ import (
 	"syscall"
 
 	core_logger "github.com/starfrus/golang-todoapp/internal/core/logger"
-	core_postgres_pool "github.com/starfrus/golang-todoapp/internal/core/repository/postgres/pool"
+	core_pgx_pool "github.com/starfrus/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/starfrus/golang-todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/starfrus/golang-todoapp/internal/core/transport/http/server"
 	users_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/users/repository/postgres"
 	users_service "github.com/starfrus/golang-todoapp/internal/feature/users/service"
-	user_transport_http "github.com/starfrus/golang-todoapp/internal/feature/users/transport/http"
+	user_transport_http "github.com/starfrus/golang-todoapp/internal/feature/users/transport/http/dto"
 	"go.uber.org/zap"
 )
 
@@ -33,9 +33,13 @@ func main() {
 	defer logger.Close()
 
 	logger.Debug("initializing postgres connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(
+	// pool, err := core_postgres_pool.NewConnectionPool(
+	// 	ctx,
+	// 	core_postgres_pool.NewConfigMust(),
+	// )
+	pool, err := core_pgx_pool.NewPool(
 		ctx,
-		core_postgres_pool.NewConfigMust(),
+		core_pgx_pool.NewConfigMust(),
 	)
 	if err != nil {
 		logger.Fatal("failed to init postgres connection pool", zap.Error(err))
@@ -53,13 +57,27 @@ func main() {
 		logger,
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Panic(),
 		core_http_middleware.Trace(),
+		core_http_middleware.Panic(),
 	)
 
-	apiVersionRouter := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
-	apiVersionRouter.RegisterRouter(usersTransport.Routes()...)
-	httpServer.RegisterApiRouters(apiVersionRouter)
+	apiVersionRouter1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
+	apiVersionRouter1.RegisterRouter(usersTransport.Routes()...)
+
+	/*
+		Exapmle of usage apiVersionRouterV2 with separate Middlewares
+
+		 apiVersionRouter2 := core_http_server.NewAPIVersionRouter(
+		 core_http_server.ApiVersion2,
+		core_http_middleware.Dummy("api v2 middleware"),
+		)
+		 apiVersionRouter2.RegisterRouter(usersTransport.Routes()...)
+
+	*/
+	httpServer.RegisterApiRouters(
+		apiVersionRouter1,
+		//apiVersionRouter2,
+	)
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("HTTP server run error", zap.Error(err))
