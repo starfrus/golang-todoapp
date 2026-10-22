@@ -19,13 +19,13 @@ CREATE TABLE todoapp.tasks(
     description     VARCHAR(1000)               CHECK (char_length(description)BETWEEN 1 AND 1000),
     completed       BOOLEAN         NOT NULL,
     created_at      TIMESTAMPTZ     NOT NULL,
-    compeleted_at   TIMESTAMPTZ,
+    completed_at   TIMESTAMPTZ,
 
     CHECK (
-        (completed=FALSE AND compeleted_at IS NULL)
+        (completed=FALSE AND completed_at IS NULL)
         OR
-        (completed=TRUE AND compeleted_at IS NOT NULL AND compeleted_at >= created_at)
+        (completed=TRUE AND completed_at IS NOT NULL AND completed_at >= created_at)
     ),
    
-    user_id         INTEGER         NOT NULL    REFERENCES todoapp.users(id)
+    author_user_id         INTEGER         NOT NULL    REFERENCES todoapp.users(id)
 );

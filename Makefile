@@ -52,11 +52,22 @@ env-port-forward: ## Включить target port-forwarder docker compose
 env-port-close: ## Выключить target port-forwarder docker compose
 	@docker compose down port-forwarder
 
+logs-cleanup:
+	@read -p "Очистить все logs файлы ? Опасность утери логов. [y/N]: " ans; \
+	if [ "$$ans" = "y" ]; then \
+		rm -rf ${PROJECT_ROOT}/out/logs && \
+		echo "Файлы логов очищены"; \
+	else \
+		echo "Очистка логов отменена"; \
+	fi
+
 todoapp-run: ## Запуск todoapp приложения
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
+
+build: env-up migrate-up env-port-forward
 
 help:
 	@grep -E '^[a-zA-Z_0-9_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-20s\033[0m\033[37m%s\033[0m\n", $$1, $$2}'
