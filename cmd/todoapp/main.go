@@ -6,18 +6,27 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	core_logger "github.com/starfrus/golang-todoapp/internal/core/logger"
 	core_pgx_pool "github.com/starfrus/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/starfrus/golang-todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/starfrus/golang-todoapp/internal/core/transport/http/server"
+	tasks_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/tasks/repository/postgres"
+	tasks_service "github.com/starfrus/golang-todoapp/internal/feature/tasks/service"
+	tasks_transport_http "github.com/starfrus/golang-todoapp/internal/feature/tasks/transport/http"
 	users_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/users/repository/postgres"
 	users_service "github.com/starfrus/golang-todoapp/internal/feature/users/service"
 	user_transport_http "github.com/starfrus/golang-todoapp/internal/feature/users/transport/http/dto"
 	"go.uber.org/zap"
 )
 
+var (
+	timeZone = time.UTC
+)
+
 func main() {
+	time.Local = timeZone
 
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -31,6 +40,8 @@ func main() {
 		os.Exit(1)
 	}
 	defer logger.Close()
+
+	logger.Debug("application time zone", zap.Any("zone", timeZone))
 
 	logger.Debug("initializing postgres connection pool")
 	// pool, err := core_postgres_pool.NewConnectionPool(
@@ -51,6 +62,11 @@ func main() {
 	usersService := users_service.NewUsersService(usersRepository)
 	usersTransport := user_transport_http.NewUsersHTTPHandler(usersService)
 
+	logger.Debug("initializing feature", zap.String("feature", "tasks"))
+	tasksRepository := tasks_postgres_repository.NewTasksRepository(pool)
+	tasksService := tasks_service.NewTasksService(tasksRepository)
+	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
+
 	logger.Debug("initializing HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
@@ -63,6 +79,7 @@ func main() {
 
 	apiVersionRouter1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouter1.RegisterRouter(usersTransport.Routes()...)
+	apiVersionRouter1.RegisterRouter(tasksTransportHTTP.Routes()...)
 
 	/*
 		Exapmle of usage apiVersionRouterV2 with separate Middlewares
