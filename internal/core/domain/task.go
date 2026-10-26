@@ -57,7 +57,20 @@ func NewTaskUninitialized(
 		nil,
 		authorUserID,
 	)
+}
 
+func (t *Task)CompletionDuration()*time.Duration{
+	if !t.Completed{
+		return nil
+	}
+
+	if t.CompletedAt == nil{
+		return nil
+	}
+
+	duration := t.CompletedAt.Sub(t.CreatedAt)
+
+	return &duration
 }
 
 func (t Task) Validate() error {
