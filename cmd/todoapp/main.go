@@ -13,6 +13,9 @@ import (
 	core_pgx_pool "github.com/starfrus/golang-todoapp/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "github.com/starfrus/golang-todoapp/internal/core/transport/http/middleware"
 	core_http_server "github.com/starfrus/golang-todoapp/internal/core/transport/http/server"
+	statistics_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/statistics/repo/postgres"
+	statistics_service "github.com/starfrus/golang-todoapp/internal/feature/statistics/service"
+	statistic_transport_http "github.com/starfrus/golang-todoapp/internal/feature/statistics/transport/http"
 	tasks_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/tasks/repository/postgres"
 	tasks_service "github.com/starfrus/golang-todoapp/internal/feature/tasks/service"
 	tasks_transport_http "github.com/starfrus/golang-todoapp/internal/feature/tasks/transport/http"
@@ -65,6 +68,11 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
+	logger.Debug("initializing feature", zap.String("feature", "statistics"))
+	statRepository := statistics_postgres_repository.NewStatisticsRepository(pool)
+	statService := statistics_service.NewStatisticsService(statRepository)
+	statTrasportHTTP := statistic_transport_http.NewStatisticHTTPHandler(statService)
+
 	logger.Debug("initializing HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
@@ -78,6 +86,7 @@ func main() {
 	apiVersionRouter1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
 	apiVersionRouter1.RegisterRouter(usersTransport.Routes()...)
 	apiVersionRouter1.RegisterRouter(tasksTransportHTTP.Routes()...)
+	apiVersionRouter1.RegisterRouter(statTrasportHTTP.Routes()...)
 
 	/*
 		Exapmle of usage apiVersionRouterV2 with separate Middlewares
