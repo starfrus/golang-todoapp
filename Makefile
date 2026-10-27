@@ -67,7 +67,11 @@ todoapp-run: ## Запуск todoapp приложения
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
 
-build: env-up migrate-up env-port-forward
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+
+ps:
+	@docker compose ps
 
 help:
 	@grep -E '^[a-zA-Z_0-9_-]+:.*?## .*$$' Makefile | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-20s\033[0m\033[37m%s\033[0m\n", $$1, $$2}'
