@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	_ "time/tzdata"
+
 	core_config "github.com/starfrus/golang-todoapp/internal/core/config"
 	core_logger "github.com/starfrus/golang-todoapp/internal/core/logger"
 	core_pgx_pool "github.com/starfrus/golang-todoapp/internal/core/repository/postgres/pool/pgx"
