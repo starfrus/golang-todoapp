@@ -52,7 +52,7 @@ env-port-forward: ## Включить target port-forwarder docker compose
 env-port-close: ## Выключить target port-forwarder docker compose
 	@docker compose down port-forwarder
 
-logs-cleanup:
+logs-cleanup: ## Очистить logs файлы
 	@read -p "Очистить все logs файлы ? Опасность утери логов. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
 		rm -rf ${PROJECT_ROOT}/out/logs && \
@@ -67,13 +67,21 @@ todoapp-run: ## Запуск todoapp приложения
 	go mod tidy && \
 	go run ${PROJECT_ROOT}/cmd/todoapp/main.go
 
-todoapp-deploy:
+todoapp-deploy: 
 	@docker compose up -d --build todoapp
 
 todoapp-undeploy:
 	@docker compose down todoapp
 
-ps:
+swagger-gen: ## Генерация swagger
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/todoapp/main.go \
+		-o docs \
+		--parseInternal \
+		--parseDependency
+
+ps: ## Вывод контейнеров docker
 	@docker compose ps
 
 help:

@@ -11,6 +11,17 @@ import (
 
 type GetUsersResponse []UserDTOResponse
 
+// GetUsers		godoc
+// @Summary		Список пользователей
+// @Description	Просмотр списка пользователей с опциональной пагинацией
+// @Tags		users
+// @Produce		json
+// @Param		limit	query		integer	false	"Размер списка пользователей"
+// @Param		offset	query		integer	false	"Смещение списка пользователей"
+// @Success		200		{object}	GetUsersResponse						"Успешное получение списка пользователей"
+// @Failure		400		{object}	core_http_response.ErrorResponse		"Bad request"
+// @Failure		500		{object}	core_http_response.ErrorResponse		"Internal server error"
+// @Router		/users [get]
 func (h *UsersHTTPHandler) GetUsers(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
@@ -33,8 +44,8 @@ func (h *UsersHTTPHandler) GetUsers(rw http.ResponseWriter, r *http.Request) {
 }
 
 func getLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
-	const(
-		limitQueryParamKey = "limit"
+	const (
+		limitQueryParamKey  = "limit"
 		offsetQueryParamKey = "offset"
 	)
 	limit, err := core_http_request.GetIntQueryParam(r, limitQueryParamKey)

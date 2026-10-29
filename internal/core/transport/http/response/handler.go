@@ -38,7 +38,7 @@ func (h *HTTPResponseHandler) JSONResponse(
 	}
 }
 
-func (h *HTTPResponseHandler)NoContentResponse(){
+func (h *HTTPResponseHandler) NoContentResponse() {
 	h.rw.WriteHeader(http.StatusNoContent)
 }
 
@@ -87,9 +87,9 @@ func (h *HTTPResponseHandler) errorResponse(
 	msg string,
 ) {
 
-	response := map[string]string{
-		"message": msg,
-		"error":   err.Error(),
+	response := ErrorResponse{
+		Error:   err.Error(),
+		Message: msg,
 	}
 
 	h.JSONResponse(response, statusCode)
