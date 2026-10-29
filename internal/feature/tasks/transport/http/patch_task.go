@@ -11,13 +11,13 @@ import (
 	core_http_types "github.com/starfrus/golang-todoapp/internal/core/transport/http/types"
 )
 
-type PatchTaksRequest struct {
-	Title       core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed   core_http_types.Nullable[bool]   `json:"completed"`
+type PatchTaskRequest struct {
+	Title       core_http_types.Nullable[string] `json:"title"       swaggertype:"string"  example:"Погулять с жуком"`       
+	Description core_http_types.Nullable[string] `json:"description" swaggertype:"string"  example:"null"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed"   swaggertype:"boolean"`
 }
 
-func (r *PatchTaksRequest) Validate() error {
+func (r *PatchTaskRequest) Validate() error {
 	if r.Title.Set {
 		if r.Title.Value == nil {
 			return fmt.Errorf("title can't be NULL")
@@ -46,6 +46,25 @@ func (r *PatchTaksRequest) Validate() error {
 	return nil
 }
 
+// PatchTask	godoc
+// @Summary		Обновление задачи
+// @Description	Обновление информации об уже существующей в системе задаче.
+// @Description	### Логика обновления полей (Three-state logic):
+// @Description	1. **Поле не передано**: `description` игнорируется, значение в БД не меняется.
+// @Description	2. **Явно передано значение**: `"description": "Утром в 06:30 выйти на прогулку с Бобиком"` - устанавливает новое описание для задачи.
+// @Description	3. **Передан null**: `"description": null` - очищает поле в БД (set to NULL).
+// @Description	4. **Ограничение**: поля `title` и `completed` не могут быть установлены в `null`.
+// @Tags		tasks
+// @Accept		json
+// @Produce		json
+// @Param		id		path		integer				true	"ID изменяемой задачи"
+// @Param		request	body		PatchTaskRequest	true	"PatchTask тело запроса"
+// @Success		200		{object}	PatchTaskResponse						"Успешно изменённая задача"
+// @Failure		400		{object}	core_http_response.ErrorResponse		"Bad request"
+// @Failure		404		{object}	core_http_response.ErrorResponse		"Task not found"
+// @Failure		409		{object}	core_http_response.ErrorResponse		"Conflict"
+// @Failure		500		{object}	core_http_response.ErrorResponse		"Internal server error"
+// @Router		/tasks/{id} [patch]
 func (h *TasksHTTPHandler) PatchTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
@@ -60,7 +79,7 @@ func (h *TasksHTTPHandler) PatchTask(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var request PatchTaksRequest
+	var request PatchTaskRequest
 
 	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
 		responseHandler.ErrorResponse(
@@ -90,7 +109,7 @@ func (h *TasksHTTPHandler) PatchTask(rw http.ResponseWriter, r *http.Request) {
 
 type PatchTaskResponse TaskDTOResponse
 
-func taskPatchFromRequest(request PatchTaksRequest) domain.TaskPatch{
+func taskPatchFromRequest(request PatchTaskRequest) domain.TaskPatch{
 	return domain.NewTaskPatch(
 		request.Title.ToDomain(),
 		request.Description.ToDomain(),
