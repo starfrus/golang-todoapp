@@ -26,9 +26,10 @@ import (
 	users_postgres_repository "github.com/starfrus/golang-todoapp/internal/feature/users/repository/postgres"
 	users_service "github.com/starfrus/golang-todoapp/internal/feature/users/service"
 	user_transport_http "github.com/starfrus/golang-todoapp/internal/feature/users/transport/http/dto"
+	web_fs_repository "github.com/starfrus/golang-todoapp/internal/feature/web/repo/file_system"
+	web_service "github.com/starfrus/golang-todoapp/internal/feature/web/service"
+	web_trasport_http "github.com/starfrus/golang-todoapp/internal/feature/web/transport/http"
 	"go.uber.org/zap"
-
-	
 )
 
 // @title 			Golang Todo API
@@ -84,6 +85,11 @@ func main() {
 	statService := statistics_service.NewStatisticsService(statRepository)
 	statTrasportHTTP := statistic_transport_http.NewStatisticHTTPHandler(statService)
 
+	logger.Debug("initializing feature", zap.String("feature", "web"))
+	webRepository := web_fs_repository.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webTransportHTTP := web_trasport_http.NewWebHTTPHandler(webService)
+
 	logger.Debug("initializing HTTP server")
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
@@ -114,7 +120,7 @@ func main() {
 		apiVersionRouter1,
 		//apiVersionRouter2,
 	)
-
+	httpServer.RegisterRoutes(webTransportHTTP.Routes()...)
 	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {

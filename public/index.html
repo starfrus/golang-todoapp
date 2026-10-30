@@ -1,0 +1,1715 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Golang Todo API — Single File Admin</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      background: #e4e9ee;
+      color: #1e315c;
+    }
+
+    .header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .header p {
+      margin: 4px 0 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .tab-btn {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #334155;
+      padding: 9px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .tab-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .section-title {
+      margin: 0 0 4px;
+      font-size: 24px;
+    }
+
+    .section-sub {
+      margin: 0 0 16px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 180px;
+      flex: 1 1 180px;
+    }
+
+    .field.small {
+      flex: 0 0 auto;
+      min-width: 130px;
+    }
+
+    .field.wide {
+      flex: 1 1 320px;
+      min-width: 280px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      outline: none;
+      background: #ffffff;
+      transition: 0.15s ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 96px;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn.primary {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      background: #1e293b;
+    }
+
+    .btn.secondary {
+      background: #ffffff;
+      color: #334155;
+      border-color: #cbd5e1;
+    }
+
+    .btn.secondary:hover:not(:disabled) {
+      background: #f1f5f9;
+    }
+
+    .btn.danger {
+      background: #ffffff;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .btn.danger:hover:not(:disabled) {
+      background: #fef2f2;
+    }
+
+    .btn.small {
+      padding: 7px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .badge.ok {
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+
+    .badge.ok:hover {
+      background: #d1fae5;
+    }
+
+    .badge.warn {
+      background: #fffbeb;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .badge.warn:hover {
+      background: #fef3c7;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      color: #475569;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .stat-label {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      word-break: break-word;
+    }
+
+    .loading,
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .error {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .muted {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    dialog {
+      border: none;
+      border-radius: 16px;
+      padding: 0;
+      width: min(620px, calc(100vw - 32px));
+      box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .dialog-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dialog-head h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .dialog-body {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .dialog-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .icon-btn {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .icon-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      display: grid;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .toast {
+      min-width: 220px;
+      max-width: 380px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: #ffffff;
+      background: #0f172a;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.22);
+      font-size: 14px;
+      animation: slideIn 0.18s ease;
+    }
+
+    .toast.success {
+      background: #047857;
+    }
+
+    .toast.error {
+      background: #b91c1c;
+    }
+
+    .toast.info {
+      background: #1d4ed8;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+    }
+
+    @media (max-width: 760px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      table {
+        min-width: 760px;
+      }
+    }
+        .stat-blue {
+      border-left: 4px solid #3b82f6;
+    }
+    .stat-blue .stat-value {
+      color: #1e40af;
+    }
+
+    .stat-green {
+      border-left: 4px solid #10b981;
+    }
+    .stat-green .stat-value {
+      color: #047857;
+    }
+
+    .stat-orange {
+      border-left: 4px solid #f59e0b;
+    }
+    .stat-orange .stat-value {
+      color: #b45309;
+    }
+        .stat-purple {
+      border-left: 4px solid #8b5cf6;
+    }
+    .stat-purple .stat-value {
+      color: #6d28d9;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <div>
+        <h1>Golang Todo by starfrus</h1>
+      </div>
+
+      <div class="field wide">
+        <label for="apiBase">API Base URL</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input id="apiBase" placeholder="http://127.0.0.1:5050/api/v1" />
+          <button id="saveApiBase" class="btn secondary">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container tabs" id="tabs">
+      <button class="tab-btn active" data-tab="statistics">Статистика</button>
+      <button class="tab-btn" data-tab="users">Пользователи</button>
+      <button class="tab-btn" data-tab="tasks">Задачи</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Statistics -->
+    <section id="tab-statistics">
+      <h2 class="section-title">Статистика</h2>
+      <p class="section-sub">
+        Используется endpoint: <code>GET /statistics</code>
+      </p>
+
+      <div class="card toolbar">
+        <div class="field">
+          <label for="statUser">Пользователь</label>
+          <select id="statUser">
+            <option value="">Все пользователи</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="statFrom">С даты</label>
+          <input id="statFrom" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="statTo">По дату</label>
+          <input id="statTo" type="date" />
+        </div>
+
+        <div class="field small">
+          <label>&nbsp;</label>
+          <button id="statReset" class="btn secondary">Сбросить</button>
+        </div>
+      </div>
+
+      <div id="statLoading" class="loading card hidden">Загрузка статистики...</div>
+      <div id="statError" class="error hidden"></div>
+      <div id="statsGrid" class="stats-grid"></div>
+    </section>
+
+    <!-- Users -->
+    <section id="tab-users" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+        <div>
+          <h2 class="section-title">Пользователи</h2>
+          <p class="section-sub" style="margin-bottom: 0;">
+            CRUD для <code>/users</code>
+          </p>
+        </div>
+
+        <button id="btnCreateUser" class="btn primary">Создать пользователя</button>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div class="field wide">
+            <label for="usersSearch">Поиск по имени</label>
+            <input id="usersSearch" placeholder="Например: Иван" />
+          </div>
+
+          <div class="field small">
+            <label for="usersLimit">На странице</label>
+            <select id="usersLimit">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="usersLoading" class="loading hidden">Загрузка пользователей...</div>
+        <div id="usersError" class="error hidden"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ФИО</th>
+                <th>Телефон</th>
+                <th>Version</th>
+                <th style="text-align: right;">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span id="usersPage">Страница 1</span>
+          <div style="display: flex; gap: 8px;">
+            <button id="usersPrev" class="btn secondary small">Назад</button>
+            <button id="usersNext" class="btn secondary small">Вперёд</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks -->
+    <section id="tab-tasks" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+        <div>
+          <h2 class="section-title">Задачи</h2>
+          <p class="section-sub" style="margin-bottom: 0;">
+            CRUD для <code>/tasks</code>
+          </p>
+        </div>
+
+        <button id="btnCreateTask" class="btn primary">Создать задачу</button>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div class="field wide">
+            <label for="taskSearch">Поиск</label>
+            <input id="taskSearch" placeholder="Название или описание" />
+          </div>
+
+          <div class="field">
+            <label for="taskUserFilter">Автор</label>
+            <select id="taskUserFilter">
+              <option value="">Все авторы</option>
+            </select>
+          </div>
+
+          <div class="field small">
+            <label for="taskLimit">На странице</label>
+            <select id="taskLimit">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="tasksLoading" class="loading hidden">Загрузка задач...</div>
+        <div id="tasksError" class="error hidden"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Задача</th>
+                <th>Автор</th>
+                <th>Статус</th>
+                <th>Создана</th>
+                <th>Завершена</th>
+                <th>Version</th>
+                <th style="text-align: right;">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="tasksBody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span id="tasksPage">Страница 1</span>
+          <div style="display: flex; gap: 8px;">
+            <button id="tasksPrev" class="btn secondary small">Назад</button>
+            <button id="tasksNext" class="btn secondary small">Вперёд</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- User dialog -->
+  <dialog id="userDialog">
+    <form id="userForm">
+      <div class="dialog-head">
+        <h3 id="userDialogTitle">Новый пользователь</h3>
+        <button type="button" class="icon-btn" data-close="userDialog" aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <div id="userFormError" class="error hidden"></div>
+
+        <div class="field">
+          <label for="userFullName">ФИО *</label>
+          <input id="userFullName" maxlength="100" placeholder="Ivan Ivanov" />
+        </div>
+
+        <div class="field">
+          <label for="userPhone">Телефон</label>
+          <input id="userPhone" maxlength="15" placeholder="+79998887766" />
+          <div class="muted">
+            Необязательное поле. Если было значение и вы очистите поле, будет отправлен <code>null</code>.
+          </div>
+        </div>
+
+        <div id="userMeta" class="muted"></div>
+      </div>
+
+      <div class="dialog-foot">
+        <button type="button" class="btn secondary" data-close="userDialog">Отмена</button>
+        <button type="submit" class="btn primary" id="userSubmit">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Task dialog -->
+  <dialog id="taskDialog">
+    <form id="taskForm">
+      <div class="dialog-head">
+        <h3 id="taskDialogTitle">Новая задача</h3>
+        <button type="button" class="icon-btn" data-close="taskDialog" aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="dialog-body">
+        <div id="taskFormError" class="error hidden"></div>
+
+        <div class="field" id="taskAuthorField">
+          <label for="taskAuthor">Автор *</label>
+          <select id="taskAuthor">
+            <option value="">Выберите пользователя</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="taskTitle">Название *</label>
+          <input id="taskTitle" maxlength="100" placeholder="Домашнее задание" />
+        </div>
+
+        <div class="checkbox-row">
+          <input id="taskCompleted" type="checkbox" />
+          <label for="taskCompleted" style="margin: 0;">Задача завершена</label>
+        </div>
+
+        <div class="field">
+          <label for="taskDescription">Описание</label>
+          <textarea id="taskDescription" maxlength="1000" placeholder="Необязательное описание"></textarea>
+          <div class="muted">
+            Если было описание и вы очистите поле, будет отправлен <code>null</code>.
+          </div>
+        </div>
+
+        <div id="taskMeta" class="muted"></div>
+      </div>
+
+      <div class="dialog-foot">
+        <button type="button" class="btn secondary" data-close="taskDialog">Отмена</button>
+        <button type="submit" class="btn primary" id="taskSubmit">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toasts" class="toast-wrap"></div>
+
+  <script>
+    (() => {
+      const $ = (selector, root = document) => root.querySelector(selector);
+      const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+      const DEFAULT_API_BASE = "http://127.0.0.1:5050/api/v1";
+
+      const state = {
+        apiBase: localStorage.getItem("todoApiBase") || DEFAULT_API_BASE,
+        activeTab: "statistics",
+
+        allUsers: [],
+        usersLoaded: false,
+
+        users: {
+          limit: 10,
+          offset: 0,
+          search: "",
+          data: [],
+          loading: false,
+        },
+
+        tasks: {
+          limit: 10,
+          offset: 0,
+          search: "",
+          userId: "",
+          data: [],
+          loading: false,
+        },
+
+        stats: {
+          userId: "",
+          from: "",
+          to: "",
+        },
+
+        editingUser: null,
+        editingTask: null,
+      };
+
+      function esc(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function toast(message, type = "info") {
+        const wrap = $("#toasts");
+        const item = document.createElement("div");
+        item.className = `toast ${type}`;
+        item.textContent = message;
+        wrap.appendChild(item);
+
+        setTimeout(() => {
+          item.remove();
+        }, 3200);
+      }
+
+      function showError(el, message) {
+        el.textContent = message || "Ошибка";
+        el.classList.remove("hidden");
+      }
+
+      function hideError(el) {
+        el.textContent = "";
+        el.classList.add("hidden");
+      }
+
+      function normalizeApiBase(url) {
+        return String(url || "").trim().replace(/\/+$/, "");
+      }
+
+      function buildQuery(params) {
+        const search = new URLSearchParams();
+
+        Object.entries(params || {}).forEach(([key, value]) => {
+          if (value === undefined || value === null || value === "") return;
+          search.append(key, String(value));
+        });
+
+        const query = search.toString();
+        return query ? `?${query}` : "";
+      }
+
+      async function apiRequest(path, options = {}) {
+        const method = options.method || "GET";
+        const base = normalizeApiBase(state.apiBase);
+        const url = `${base}${path}`;
+
+        const init = {
+          method,
+          headers: {},
+        };
+
+        if (options.body !== undefined) {
+          init.headers["Content-Type"] = "application/json";
+          init.body = JSON.stringify(options.body);
+        }
+
+        let response;
+
+        try {
+          response = await fetch(url, init);
+        } catch (error) {
+          throw new Error(
+            "Не удалось подключиться к API. Проверьте API Base URL и CORS на бэкенде."
+          );
+        }
+
+        if (response.status === 204) {
+          return null;
+        }
+
+        const text = await response.text();
+        let payload = null;
+
+        if (text) {
+          try {
+            payload = JSON.parse(text);
+          } catch {
+            payload = { message: text };
+          }
+        }
+
+        if (!response.ok) {
+          const message =
+            payload?.message ||
+            payload?.error ||
+            `HTTP ${response.status}`;
+          throw new Error(message);
+        }
+
+        return payload;
+      }
+
+      const apiGet = (path) => apiRequest(path, { method: "GET" });
+      const apiPost = (path, body) => apiRequest(path, { method: "POST", body });
+      const apiPatch = (path, body) => apiRequest(path, { method: "PATCH", body });
+      const apiDelete = (path) => apiRequest(path, { method: "DELETE" });
+
+      function formatRate(value) {
+        if (value === undefined || value === null || value === "") return "—";
+
+        const num = Number(value);
+        if (!Number.isFinite(num)) return esc(String(value));
+
+        const percent = Math.abs(num) <= 1 ? num * 100 : num;
+        const digits = Number.isInteger(percent) ? 0 : 1;
+
+        return `${percent.toFixed(digits)}%`;
+      }
+
+      function formatDate(value) {
+        if (!value || value === "null") return "—";
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return esc(String(value));
+
+        return date.toLocaleString("ru-RU");
+      }
+
+      function authorName(authorId) {
+        const user = state.allUsers.find((item) => item.id === authorId);
+        return user ? user.full_name : `#${authorId}`;
+      }
+
+      async function loadAllUsers(force = false) {
+        if (!force && state.usersLoaded) {
+          populateUserSelects();
+          return;
+        }
+
+        try {
+          const all = [];
+          const limit = 100;
+          let offset = 0;
+
+          while (true) {
+            const page = await apiGet(`/users${buildQuery({ limit, offset })}`);
+            const items = Array.isArray(page) ? page : [];
+            all.push(...items);
+
+            if (items.length < limit) break;
+
+            offset += limit;
+
+            // Защита от бесконечного цикла, если API вернёт некорректные данные.
+            if (all.length >= 5000) break;
+          }
+
+          state.allUsers = all;
+          state.usersLoaded = true;
+          populateUserSelects();
+        } catch (error) {
+          console.error(error);
+          state.allUsers = [];
+          state.usersLoaded = false;
+          populateUserSelects();
+        }
+      }
+
+      function populateUserSelects() {
+        const optionsHtml = state.allUsers
+          .map((user) => `<option value="${esc(user.id)}">${esc(user.full_name)} #${esc(user.id)}</option>`)
+          .join("");
+
+        const statUser = $("#statUser");
+        const taskUserFilter = $("#taskUserFilter");
+        const taskAuthor = $("#taskAuthor");
+
+        statUser.innerHTML = `<option value="">Все пользователи</option>${optionsHtml}`;
+        statUser.value = state.stats.userId || "";
+
+        taskUserFilter.innerHTML = `<option value="">Все авторы</option>${optionsHtml}`;
+        taskUserFilter.value = state.tasks.userId || "";
+
+        taskAuthor.innerHTML = `<option value="">Выберите пользователя</option>${optionsHtml}`;
+        taskAuthor.value = "";
+      }
+
+      async function switchTab(tab) {
+        state.activeTab = tab;
+
+        $$(".tab-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === tab);
+        });
+
+        $("#tab-statistics").classList.toggle("hidden", tab !== "statistics");
+        $("#tab-users").classList.toggle("hidden", tab !== "users");
+        $("#tab-tasks").classList.toggle("hidden", tab !== "tasks");
+
+        if (tab === "statistics") {
+          await loadAllUsers(false);
+          await loadStatistics();
+        } else if (tab === "users") {
+          await loadUsers();
+        } else if (tab === "tasks") {
+          await loadAllUsers(false);
+          await loadTasks();
+        }
+      }
+
+      async function loadStatistics() {
+        const loading = $("#statLoading");
+        const error = $("#statError");
+        const grid = $("#statsGrid");
+
+        loading.classList.remove("hidden");
+        hideError(error);
+        grid.innerHTML = "";
+
+        try {
+          const data = await apiGet(
+            `/statistics${buildQuery({
+              user_id: state.stats.userId,
+              from: state.stats.from,
+              to: state.stats.to,
+            })}`
+          );
+
+          renderStatistics(data);
+        } catch (err) {
+          showError(error, err.message);
+        } finally {
+          loading.classList.add("hidden");
+        }
+      }
+
+      function renderStatistics(data) {
+        const grid = $("#statsGrid");
+
+        if (!data) {
+          grid.innerHTML = `<div class="card empty">Нет данных статистики</div>`;
+          return;
+        }
+
+        grid.innerHTML = `
+          <div class="stat-card stat-blue">
+            <div class="stat-label">Задач создано</div>
+            <div class="stat-value">${esc(data.tasks_created ?? 0)}</div>
+          </div>
+
+          <div class="stat-card stat-green">
+            <div class="stat-label">Задач завершено</div>
+            <div class="stat-value">${esc(data.tasks_completed ?? 0)}</div>
+          </div>
+
+          <div class="stat-card stat-orange">
+            <div class="stat-label">Процент завершения</div>
+            <div class="stat-value">${formatRate(data.tasks_completed_rate)}</div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-label">Среднее время завершения</div>
+            <div class="stat-value">${esc(data.tasks_average_completion_time || "—")}</div>
+          </div>
+        `;
+      }
+
+      async function loadUsers() {
+        const error = $("#usersError");
+
+        state.users.loading = true;
+        hideError(error);
+        renderUsers();
+
+        try {
+          const data = await apiGet(
+            `/users${buildQuery({
+              limit: state.users.limit,
+              offset: state.users.offset,
+            })}`
+          );
+
+          state.users.data = Array.isArray(data) ? data : [];
+        } catch (err) {
+          state.users.data = [];
+          showError(error, err.message);
+        } finally {
+          state.users.loading = false;
+          renderUsers();
+        }
+      }
+
+      function filteredUsers() {
+        const query = state.users.search.trim().toLowerCase();
+        if (!query) return state.users.data;
+
+        return state.users.data.filter((user) =>
+          String(user.full_name || "").toLowerCase().includes(query)
+        );
+      }
+
+      function renderUsers() {
+        const loading = $("#usersLoading");
+        const tbody = $("#usersBody");
+        const rows = filteredUsers();
+
+        loading.classList.toggle("hidden", !state.users.loading);
+
+        if (!state.users.loading && rows.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty">Пользователи не найдены</td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = rows
+            .map((user) => {
+              return `
+                <tr>
+                  <td>${esc(user.id)}</td>
+                  <td><strong>${esc(user.full_name)}</strong></td>
+                  <td>${esc(user.phone_number || "—")}</td>
+                  <td>${esc(user.version)}</td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn secondary small" data-action="edit-user" data-id="${esc(user.id)}">
+                        Изменить
+                      </button>
+                      <button class="btn danger small" data-action="delete-user" data-id="${esc(user.id)}">
+                        Удалить
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+
+        const page = Math.floor(state.users.offset / state.users.limit) + 1;
+        $("#usersPage").textContent = `Страница ${page}`;
+        $("#usersPrev").disabled = state.users.offset === 0;
+        $("#usersNext").disabled = state.users.data.length < state.users.limit;
+      }
+
+      function openUserDialog(mode, user = null) {
+        const dialog = $("#userDialog");
+        const error = $("#userFormError");
+
+        hideError(error);
+
+        if (mode === "edit") {
+          state.editingUser = user;
+          $("#userDialogTitle").textContent = "Редактировать пользователя";
+          $("#userFullName").value = user.full_name || "";
+          $("#userPhone").value = user.phone_number || "";
+          $("#userMeta").textContent = `ID: ${user.id} · Version: ${user.version}`;
+        } else {
+          state.editingUser = null;
+          $("#userDialogTitle").textContent = "Новый пользователь";
+          $("#userFullName").value = "";
+          $("#userPhone").value = "";
+          $("#userMeta").textContent = "";
+        }
+
+        dialog.showModal();
+        $("#userFullName").focus();
+      }
+
+      async function deleteUser(user) {
+        const ok = window.confirm(`Удалить пользователя "${user.full_name}"?`);
+        if (!ok) return;
+
+        try {
+          await apiDelete(`/users/${user.id}`);
+          toast("Пользователь удалён", "success");
+
+          await loadAllUsers(true);
+          await loadUsers();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      async function loadTasks() {
+        const error = $("#tasksError");
+
+        state.tasks.loading = true;
+        hideError(error);
+        renderTasks();
+
+        try {
+          const data = await apiGet(
+            `/tasks${buildQuery({
+              user_id: state.tasks.userId,
+              limit: state.tasks.limit,
+              offset: state.tasks.offset,
+            })}`
+          );
+
+          state.tasks.data = Array.isArray(data) ? data : [];
+        } catch (err) {
+          state.tasks.data = [];
+          showError(error, err.message);
+        } finally {
+          state.tasks.loading = false;
+          renderTasks();
+        }
+      }
+
+      function filteredTasks() {
+        const query = state.tasks.search.trim().toLowerCase();
+        if (!query) return state.tasks.data;
+
+        return state.tasks.data.filter((task) => {
+          const title = String(task.title || "").toLowerCase();
+          const description = String(task.description || "").toLowerCase();
+
+          return title.includes(query) || description.includes(query);
+        });
+      }
+
+      function renderTasks() {
+        const loading = $("#tasksLoading");
+        const tbody = $("#tasksBody");
+        const rows = filteredTasks();
+
+        loading.classList.toggle("hidden", !state.tasks.loading);
+
+        if (!state.tasks.loading && rows.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="empty">Задачи не найдены</td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = rows
+            .map((task) => {
+              const statusClass = task.completed ? "ok" : "warn";
+              const statusText = task.completed ? "Завершена" : "В работе";
+
+              return `
+                <tr>
+                  <td>${esc(task.id)}</td>
+                  <td>
+                    <div><strong>${esc(task.title)}</strong></div>
+                    ${
+                      task.description
+                        ? `<div class="muted" style="margin-top: 4px;">${esc(task.description)}</div>`
+                        : ""
+                    }
+                  </td>
+                  <td>${esc(authorName(task.author_user_id))}</td>
+                  <td>
+                    <button class="badge ${statusClass}" data-action="toggle-task" data-id="${esc(task.id)}">
+                      ${esc(statusText)}
+                    </button>
+                  </td>
+                  <td>${formatDate(task.created_at)}</td>
+                  <td>${formatDate(task.completed_at)}</td>
+                  <td>${esc(task.version)}</td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn secondary small" data-action="edit-task" data-id="${esc(task.id)}">
+                        Изменить
+                      </button>
+                      <button class="btn danger small" data-action="delete-task" data-id="${esc(task.id)}">
+                        Удалить
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            })
+            .join("");
+        }
+
+        const page = Math.floor(state.tasks.offset / state.tasks.limit) + 1;
+        $("#tasksPage").textContent = `Страница ${page}`;
+        $("#tasksPrev").disabled = state.tasks.offset === 0;
+        $("#tasksNext").disabled = state.tasks.data.length < state.tasks.limit;
+      }
+
+      function openTaskDialog(mode, task = null) {
+        const dialog = $("#taskDialog");
+        const error = $("#taskFormError");
+
+        hideError(error);
+
+        if (mode === "edit") {
+          state.editingTask = task;
+          $("#taskDialogTitle").textContent = "Редактировать задачу";
+          $("#taskAuthorField").classList.add("hidden");
+          $("#taskTitle").value = task.title || "";
+          $("#taskCompleted").checked = Boolean(task.completed);
+          $("#taskDescription").value = task.description || "";
+          $("#taskMeta").textContent =
+            `ID: ${task.id} · Author: ${task.author_user_id} · Version: ${task.version}`;
+        } else {
+          state.editingTask = null;
+          $("#taskDialogTitle").textContent = "Новая задача";
+          $("#taskAuthorField").classList.remove("hidden");
+          $("#taskAuthor").value = "";
+          $("#taskTitle").value = "";
+          $("#taskCompleted").checked = false;
+          $("#taskDescription").value = "";
+          $("#taskMeta").textContent = "";
+        }
+
+        dialog.showModal();
+        $("#taskTitle").focus();
+      }
+
+      async function toggleTask(task) {
+        try {
+          await apiPatch(`/tasks/${task.id}`, {
+            completed: !task.completed,
+          });
+
+          toast("Статус задачи обновлён", "success");
+          await loadTasks();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      async function deleteTask(task) {
+        const ok = window.confirm(`Удалить задачу "${task.title}"?`);
+        if (!ok) return;
+
+        try {
+          await apiDelete(`/tasks/${task.id}`);
+          toast("Задача удалена", "success");
+          await loadTasks();
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      function validateFullName(value) {
+        const v = String(value || "").trim();
+        if (v.length < 3 || v.length > 100) {
+          throw new Error("ФИО должно содержать от 3 до 100 символов");
+        }
+        return v;
+      }
+
+      function validatePhone(value) {
+        const v = String(value || "").trim();
+        if (!v) return "";
+        if (v.length < 10 || v.length > 15) {
+          throw new Error("Телефон должен содержать от 10 до 15 символов");
+        }
+        return v;
+      }
+
+      function validateTaskTitle(value) {
+        const v = String(value || "").trim();
+        if (v.length < 1 || v.length > 100) {
+          throw new Error("Название задачи должно содержать от 1 до 100 символов");
+        }
+        return v;
+      }
+
+      function validateTaskDescription(value) {
+        const v = String(value || "").trim();
+        if (!v) return "";
+        if (v.length < 1 || v.length > 1000) {
+          throw new Error("Описание задачи должно содержать от 1 до 1000 символов");
+        }
+        return v;
+      }
+
+      function bindEvents() {
+        $("#apiBase").value = state.apiBase;
+
+        $("#saveApiBase").addEventListener("click", () => {
+          const value = normalizeApiBase($("#apiBase").value) || DEFAULT_API_BASE;
+          state.apiBase = value;
+          localStorage.setItem("todoApiBase", value);
+          $("#apiBase").value = value;
+
+          state.usersLoaded = false;
+          state.allUsers = [];
+
+          toast("API URL сохранён", "success");
+          switchTab(state.activeTab);
+        });
+
+        $$(".tab-btn").forEach((btn) => {
+          btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+        });
+
+        // Close dialog buttons
+        document.addEventListener("click", (event) => {
+          const closeTrigger = event.target.closest("[data-close]");
+          if (!closeTrigger) return;
+
+          const dialog = $(`#${closeTrigger.dataset.close}`);
+          if (dialog) dialog.close();
+        });
+
+        // Close dialog by clicking backdrop
+        $$("dialog").forEach((dialog) => {
+          dialog.addEventListener("click", (event) => {
+            if (event.target === dialog) {
+              dialog.close();
+            }
+          });
+        });
+
+        // Statistics
+        $("#statUser").addEventListener("change", (event) => {
+          state.stats.userId = event.target.value;
+          loadStatistics();
+        });
+
+        $("#statFrom").addEventListener("change", (event) => {
+          state.stats.from = event.target.value;
+          loadStatistics();
+        });
+
+        $("#statTo").addEventListener("change", (event) => {
+          state.stats.to = event.target.value;
+          loadStatistics();
+        });
+
+        $("#statReset").addEventListener("click", () => {
+          state.stats.userId = "";
+          state.stats.from = "";
+          state.stats.to = "";
+
+          $("#statUser").value = "";
+          $("#statFrom").value = "";
+          $("#statTo").value = "";
+
+          loadStatistics();
+        });
+
+        // Users toolbar
+        $("#btnCreateUser").addEventListener("click", () => openUserDialog("create"));
+
+        $("#usersSearch").addEventListener("input", (event) => {
+          state.users.search = event.target.value;
+          renderUsers();
+        });
+
+        $("#usersLimit").addEventListener("change", (event) => {
+          state.users.limit = Number(event.target.value);
+          state.users.offset = 0;
+          loadUsers();
+        });
+
+        $("#usersPrev").addEventListener("click", () => {
+          state.users.offset = Math.max(0, state.users.offset - state.users.limit);
+          loadUsers();
+        });
+
+        $("#usersNext").addEventListener("click", () => {
+          state.users.offset += state.users.limit;
+          loadUsers();
+        });
+
+        $("#usersBody").addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-action]");
+          if (!button) return;
+
+          const id = Number(button.dataset.id);
+          const user = state.users.data.find((item) => item.id === id);
+          if (!user) return;
+
+          if (button.dataset.action === "edit-user") {
+            openUserDialog("edit", user);
+          }
+
+          if (button.dataset.action === "delete-user") {
+            await deleteUser(user);
+          }
+        });
+
+        $("#userForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const errorEl = $("#userFormError");
+          const submitBtn = $("#userSubmit");
+
+          hideError(errorEl);
+          submitBtn.disabled = true;
+
+          try {
+            const fullNameRaw = $("#userFullName").value;
+            const phoneRaw = $("#userPhone").value;
+
+            if (state.editingUser) {
+              const user = state.editingUser;
+              const body = {};
+
+              const fullName = fullNameRaw.trim();
+              const phone = phoneRaw.trim();
+
+              if (fullName !== user.full_name) {
+                body.full_name = validateFullName(fullName);
+              }
+
+              const initialPhone = user.phone_number || "";
+              if (phone !== initialPhone) {
+                if (phone) {
+                  body.phone_number = validatePhone(phone);
+                } else {
+                  body.phone_number = null;
+                }
+              }
+
+              if (Object.keys(body).length === 0) {
+                toast("Нет изменений", "info");
+                $("#userDialog").close();
+                return;
+              }
+
+              await apiPatch(`/users/${user.id}`, body);
+              toast("Пользователь обновлён", "success");
+            } else {
+              const fullName = validateFullName(fullNameRaw);
+              const phone = validatePhone(phoneRaw);
+
+              const body = {
+                full_name: fullName,
+              };
+
+              if (phone) {
+                body.phone_number = phone;
+              }
+
+              await apiPost("/users", body);
+              toast("Пользователь создан", "success");
+            }
+
+            $("#userDialog").close();
+
+            await loadAllUsers(true);
+            await loadUsers();
+          } catch (err) {
+            showError(errorEl, err.message);
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+
+        // Tasks toolbar
+        $("#btnCreateTask").addEventListener("click", () => openTaskDialog("create"));
+
+        $("#taskSearch").addEventListener("input", (event) => {
+          state.tasks.search = event.target.value;
+          renderTasks();
+        });
+
+        $("#taskUserFilter").addEventListener("change", (event) => {
+          state.tasks.userId = event.target.value;
+          state.tasks.offset = 0;
+          loadTasks();
+        });
+
+        $("#taskLimit").addEventListener("change", (event) => {
+          state.tasks.limit = Number(event.target.value);
+          state.tasks.offset = 0;
+          loadTasks();
+        });
+
+        $("#tasksPrev").addEventListener("click", () => {
+          state.tasks.offset = Math.max(0, state.tasks.offset - state.tasks.limit);
+          loadTasks();
+        });
+
+        $("#tasksNext").addEventListener("click", () => {
+          state.tasks.offset += state.tasks.limit;
+          loadTasks();
+        });
+
+        $("#tasksBody").addEventListener("click", async (event) => {
+          const button = event.target.closest("button[data-action]");
+          if (!button) return;
+
+          const id = Number(button.dataset.id);
+          const task = state.tasks.data.find((item) => item.id === id);
+          if (!task) return;
+
+          if (button.dataset.action === "toggle-task") {
+            await toggleTask(task);
+          }
+
+          if (button.dataset.action === "edit-task") {
+            openTaskDialog("edit", task);
+          }
+
+          if (button.dataset.action === "delete-task") {
+            await deleteTask(task);
+          }
+        });
+
+        $("#taskForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const errorEl = $("#taskFormError");
+          const submitBtn = $("#taskSubmit");
+
+          hideError(errorEl);
+          submitBtn.disabled = true;
+
+          try {
+            if (state.editingTask) {
+              const task = state.editingTask;
+              const body = {};
+
+              const title = $("#taskTitle").value.trim();
+              const completed = $("#taskCompleted").checked;
+              const description = $("#taskDescription").value.trim();
+
+              if (title !== task.title) {
+                body.title = validateTaskTitle(title);
+              }
+
+              if (completed !== task.completed) {
+                body.completed = completed;
+              }
+
+              const initialDescription = task.description || "";
+              if (description !== initialDescription) {
+                if (description) {
+                  body.description = validateTaskDescription(description);
+                } else {
+                  body.description = null;
+                }
+              }
+
+              if (Object.keys(body).length === 0) {
+                toast("Нет изменений", "info");
+                $("#taskDialog").close();
+                return;
+              }
+
+              await apiPatch(`/tasks/${task.id}`, body);
+              toast("Задача обновлена", "success");
+            } else {
+              const authorId = $("#taskAuthor").value;
+              const title = validateTaskTitle($("#taskTitle").value);
+              const description = validateTaskDescription($("#taskDescription").value);
+
+              if (!authorId) {
+                throw new Error("Выберите автора задачи");
+              }
+
+              const body = {
+                author_user_id: Number(authorId),
+                title,
+              };
+
+              if (description) {
+                body.description = description;
+              }
+
+              await apiPost("/tasks", body);
+              toast("Задача создана", "success");
+            }
+
+            $("#taskDialog").close();
+            await loadTasks();
+          } catch (err) {
+            showError(errorEl, err.message);
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
+
+      function init() {
+        bindEvents();
+
+        loadAllUsers(true)
+          .catch(() => {})
+          .finally(() => {
+            switchTab("statistics");
+          });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

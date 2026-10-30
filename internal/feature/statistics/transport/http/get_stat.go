@@ -12,10 +12,10 @@ import (
 )
 
 type GetStatisticsResponse struct {
-	TasksCreated               int     `json:"tasks_created"                 example:"50"`
-	TasksCompleted             int     `json:"tasks_completed"               example:"10"`
-	TasksCompletedRate         float64 `json:"tasks_completed_rate"          example:"20"`
-	TasksAverageCompletionTime *string `json:"tasks_average_completion_time" example:"1m30s"`
+	TasksCreated               int      `json:"tasks_created"                 example:"50"`
+	TasksCompleted             int      `json:"tasks_completed"               example:"10"`
+	TasksCompletedRate         *float64 `json:"tasks_completed_rate"          example:"20"`
+	TasksAverageCompletionTime *string  `json:"tasks_average_completion_time" example:"1m30s"`
 }
 
 // GetStatistics	godoc
@@ -67,10 +67,16 @@ func toDTOFromDomain(statistics domain.Statistics) GetStatisticsResponse {
 		avgTime = &duration
 	}
 
+	var rate *float64
+	if statistics.TasksCompletedRate != nil {
+		r := *statistics.TasksCompletedRate
+		rate = &r
+	}
+
 	return GetStatisticsResponse{
 		TasksCreated:               statistics.TasksCreated,
 		TasksCompleted:             statistics.TasksCompleted,
-		TasksCompletedRate:         *statistics.TasksCompletedRate,
+		TasksCompletedRate:         rate,
 		TasksAverageCompletionTime: avgTime,
 	}
 }

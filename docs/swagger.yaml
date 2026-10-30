@@ -48,12 +48,12 @@ definitions:
       author_user_id:
         example: 5
         type: integer
-      competed_at:
-        example: "null"
-        type: string
       completed:
         example: false
         type: boolean
+      completed_at:
+        example: "null"
+        type: string
       created_at:
         example: "2026-02-26T10:30:00Z"
         type: string
@@ -74,12 +74,12 @@ definitions:
       author_user_id:
         example: 5
         type: integer
-      competed_at:
-        example: "null"
-        type: string
       completed:
         example: false
         type: boolean
+      completed_at:
+        example: "null"
+        type: string
       created_at:
         example: "2026-02-26T10:30:00Z"
         type: string
@@ -111,12 +111,12 @@ definitions:
       author_user_id:
         example: 5
         type: integer
-      competed_at:
-        example: "null"
-        type: string
       completed:
         example: false
         type: boolean
+      completed_at:
+        example: "null"
+        type: string
       created_at:
         example: "2026-02-26T10:30:00Z"
         type: string
@@ -137,12 +137,12 @@ definitions:
       author_user_id:
         example: 5
         type: integer
-      competed_at:
-        example: "null"
-        type: string
       completed:
         example: false
         type: boolean
+      completed_at:
+        example: "null"
+        type: string
       created_at:
         example: "2026-02-26T10:30:00Z"
         type: string

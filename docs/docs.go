@@ -631,13 +631,13 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5
                 },
-                "competed_at": {
-                    "type": "string",
-                    "example": "null"
-                },
                 "completed": {
                     "type": "boolean",
                     "example": false
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "null"
                 },
                 "created_at": {
                     "type": "string",
@@ -667,13 +667,13 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5
                 },
-                "competed_at": {
-                    "type": "string",
-                    "example": "null"
-                },
                 "completed": {
                     "type": "boolean",
                     "example": false
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "null"
                 },
                 "created_at": {
                     "type": "string",
@@ -719,13 +719,13 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5
                 },
-                "competed_at": {
-                    "type": "string",
-                    "example": "null"
-                },
                 "completed": {
                     "type": "boolean",
                     "example": false
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "null"
                 },
                 "created_at": {
                     "type": "string",
@@ -755,13 +755,13 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 5
                 },
-                "competed_at": {
-                    "type": "string",
-                    "example": "null"
-                },
                 "completed": {
                     "type": "boolean",
                     "example": false
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "null"
                 },
                 "created_at": {
                     "type": "string",
