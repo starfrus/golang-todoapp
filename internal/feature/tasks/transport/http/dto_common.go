@@ -13,7 +13,7 @@ type TaskDTOResponse struct {
 	Description  *string    `json:"description"    example:"Сделать до четверга домашнее задание по литературе"`
 	Completed    bool       `json:"completed"      example:"false"`
 	CreatedAt    time.Time  `json:"created_at"     example:"2026-02-26T10:30:00Z"`
-	CompletedAt  *time.Time `json:"competed_at"    example:"null"`
+	CompletedAt  *time.Time `json:"completed_at"   example:"null"`
 	AuthorUserID int        `json:"author_user_id" example:"5"`
 }
 
